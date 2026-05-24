@@ -247,3 +247,13 @@ def fma(x, y, z, _semantic=None):
     z, x = core.binary_op_type_legalization(z, x, _semantic)
     z, y = core.binary_op_type_legalization(z, y, _semantic)
     return core.tensor(_semantic.builder.create_fma(x.handle, y.handle, z.handle), x.type)
+
+
+@core.builtin
+@_check_dtype(dtypes=["fp32", "fp64"])
+@_add_math_2arg_docstr("power")
+def pow(x, y, _semantic=None):
+    x = _semantic.to_tensor(x)
+    y = _semantic.to_tensor(y)
+    x, y = core.binary_op_type_legalization(x, y, _semantic)
+    return core.tensor(_semantic.builder.create_pow(x.handle, y.handle), x.type)

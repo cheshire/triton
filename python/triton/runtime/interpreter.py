@@ -686,6 +686,7 @@ class InterpreterBuilder:
     create_precise_sqrt = lambda self, arg: self.unary_op(arg, np.sqrt)
     create_sqrt = lambda self, arg: self.unary_op(arg, np.sqrt)
     create_sin = lambda self, arg: self.unary_op(arg, np.sin)
+    create_pow = lambda self, lhs, rhs: self.binary_op(lhs, rhs, np.power)
 
     def create_erf(self, arg):
         ret = np_erf_fp32(arg.data) if arg.data.dtype == np.float32 else np_erf_fp64(arg.data)

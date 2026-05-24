@@ -7015,3 +7015,23 @@ def test_libdevice_rint(dtype_str, device):
     rint_kernel[(triton.cdiv(numel, BLOCK_SIZE), )](res_out, x_tri, numel, BLOCK_SIZE)
     ref_out = np.rint(x_np)
     np.testing.assert_allclose(to_numpy(res_out), ref_out, rtol=0, atol=0, equal_nan=True)
+
+
+@pytest.mark.interpreter
+def test_math_pow_interpreter(device):
+
+    @triton.jit
+    def kernel(out_ptr, x_ptr, y_ptr, n, BLOCK: tl.constexpr):
+        offs = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)
+        mask = offs < n
+        x = tl.load(x_ptr + offs, mask=mask)
+        y = tl.load(y_ptr + offs, mask=mask)
+        tl.store(out_ptr + offs, tl.math.pow(x, y), mask=mask)
+
+    size = 128
+    x = torch.rand(size, dtype=torch.float32, device=device) + 0.5
+    y = torch.rand(size, dtype=torch.float32, device=device) * 3.0
+    out = torch.empty_like(x)
+    kernel[(1, )](out, x, y, size, BLOCK=size)
+    expected = np.power(x.cpu().numpy(), y.cpu().numpy())
+    np.testing.assert_allclose(out.cpu().numpy(), expected, rtol=1e-5)
